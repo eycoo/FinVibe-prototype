@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+app.db
+report.pdf
+*.egg-info/
+.venv/
+venv/
+CLAUDE.md
+.claude/
+context/
+*.log
+.idea/
+.vscode/
