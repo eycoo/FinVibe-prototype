@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>C2C — Chat to Core</title>
+<title>FinVibe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -103,6 +103,11 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+
+    position: sticky;
+    top: 0;
+    align-self: start; 
+    height: calc(100vh - 60px); 
   }
 
   .panel-section-label {
@@ -114,38 +119,178 @@
     padding: 16px 22px 10px;
   }
 
-  .phone-bar {
-    padding: 0 22px 12px;
+  /* Layout Header Chats */
+  .chats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 22px 8px;
+  }
+  
+  .chats-title {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--wa-text);
+  }
+  
+  .chats-actions {
+    display: flex;
+    gap: 18px;
+    color: var(--wa-text-sub);
+    cursor: pointer;
+  }
+
+  .search-bar-container {
+    padding: 8px 22px 12px;
+  }
+
+  .search-bar-inner {
+    display: flex;
+    align-items: center;
+    background: #202c33;
+    border-radius: 24px; 
+    padding: 8px 16px;
+    gap: 12px;
+  }
+
+  .search-icon {
+    color: #8696a0;
+    flex-shrink: 0;
+  }
+
+  .search-bar-inner input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--wa-text);
+    font-size: 14.5px;
+    outline: none;
+    font-family: inherit;
+  }
+
+  .search-bar-inner input::placeholder {
+    color: #8696a0;
+  }
+
+  /* Filter Chips WA Android */
+  .wa-filters {
     display: flex;
     gap: 8px;
+    padding: 0 16px 12px;
+    overflow-x: auto;
   }
 
-  .phone-bar input {
-    flex: 1;
-    background: var(--wa-header);
-    border: 1px solid var(--wa-border);
-    border-radius: var(--radius-sm);
-    color: var(--wa-text);
-    padding: 9px 13px;
+  .wa-chip {
+    background: #202c33;
+    color: #8696a0;
     font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-    font-family: inherit;
-    letter-spacing: 0.2px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
   }
 
-  .phone-bar input:focus {
-    border-color: var(--wa-green);
+  .wa-chip.active {
+    background: rgba(0, 168, 132, 0.15);
+    color: #25d366;
   }
 
-  .phone-bar input::placeholder { color: var(--wa-text-sub); }
+  .wa-chip.icon {
+    padding: 6px 8px;
+  }
+
+  /* Contact List WA Android */
+  .wa-contact-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0 12px;
+    gap: 4px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .wa-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .wa-contact-item:hover, .wa-contact-item.active {
+    background: #202c33;
+  }
+
+  .wa-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .wa-contact-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    gap: 2px;
+  }
+
+  .wa-contact-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .wa-contact-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--wa-text);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .wa-contact-time {
+    font-size: 12px;
+    color: #8696a0;
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  .wa-contact-bottom {
+    display: flex;
+    align-items: center;
+  }
+
+  .wa-contact-preview {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    color: #8696a0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
 
   /* Quick chips */
   .quick-chips {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 0 22px 12px;
+    padding: 12px 22px 12px;
   }
 
   .chip {
@@ -225,33 +370,97 @@
     border-bottom-left-radius: 2px;
   }
 
-  /* Input area */
-  .chat-input {
-    border-top: 1px solid var(--wa-border);
-    padding: 12px 18px;
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-    background: var(--wa-header);
-  }
+  /* Container Utama Footer */
+.wa-chat-footer {
+  display: flex;
+  align-items: flex-end;
+  padding: 6px 10px 10px;
+  gap: 8px;
+  background: transparent;
+}
 
-  .chat-input textarea {
-    flex: 1;
-    background: var(--wa-panel);
-    border: none;
-    border-radius: 10px;
-    color: var(--wa-text);
-    padding: 10px 14px;
-    font-size: 13.5px;
-    resize: none;
-    max-height: 100px;
-    min-height: 42px;
-    outline: none;
-    font-family: inherit;
-    line-height: 1.45;
-  }
+/* Pill Input (Warna latar abu-abu gelap khas WA) */
+.wa-input-pill {
+  flex: 1;
+  background: #202c33;
+  border-radius: 22px;
+  display: flex;
+  align-items: flex-end;
+  padding: 2px 12px;
+  gap: 6px;
+}
 
-  .chat-input textarea::placeholder { color: var(--wa-text-sub); }
+/* Peran Toggle (Pengganti Stiker) */
+.role-pill-btn {
+  background: rgba(0, 168, 132, 0.15);
+  border: 1px solid rgba(0, 168, 132, 0.4);
+  color: #25d366;
+  border-radius: 16px;
+  padding: 2px 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.role-pill-btn.lawan {
+  background: rgba(241, 92, 109, 0.12);
+  border-color: rgba(241, 92, 109, 0.4);
+  color: #f87171;
+}
+
+/* Textarea Ketik */
+.wa-input-pill textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--wa-text);
+  font-size: 14px;
+  padding: 8px 0;
+  resize: none;
+  max-height: 100px;
+  outline: none;
+  font-family: inherit;
+}
+
+/* Ikon-ikon di dalam Pill */
+.wa-icon-pill {
+  background: transparent;
+  border: none;
+  color: #8696a0;
+  cursor: pointer;
+  padding: 6px 3px;
+  display: flex;
+  align-items: center;
+}
+
+.wa-icon-pill:hover {
+  color: #e9edef;
+}
+
+/* Tombol Aksi Bulat di Kanan */
+.wa-action-circle {
+  width: 42px;
+  height: 42px;
+  background: #00a884;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111b21;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  transition: transform 0.1s;
+}
+
+.wa-action-circle:active {
+  transform: scale(0.9);
+}
+
+
 
   /* Buttons */
   .btn {
@@ -300,6 +509,40 @@
   }
 
   .btn.secondary:hover:not(:disabled) { border-color: var(--wa-green); color: var(--wa-green-light); transform: none; }
+
+  .btn-refresh {
+  background: transparent;
+  border: 1px solid var(--wa-border);
+  color: var(--wa-text-sub);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  }
+
+  .btn-refresh:hover:not(:disabled) {
+  border-color: var(--wa-green);
+  color: var(--wa-green-light);
+  background: rgba(0, 168, 132, 0.1);
+  }
+
+  .btn-refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  }
+
+  .spin-anim svg {
+  animation: spin-refresh 0.8s linear infinite;
+  }
+
+  @keyframes spin-refresh {
+  100% { transform: rotate(360deg); }
+  }
 
   /* ── Right Panel ─────────────────────────────────────────────────────── */
   .panel-right {
@@ -516,73 +759,284 @@
     50%       { box-shadow: 0 0 0 7px rgba(248,113,113,0); }
   }
   .btn-icon.recording { animation: pulse-mic 1.1s ease infinite; }
+
+  /* Mode selector */
+  .mode-bar {
+    display: flex;
+    gap: 6px;
+    padding: 0 22px 12px;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 7px 0;
+    border-radius: var(--radius-sm);
+    background: var(--wa-header);
+    border: 1px solid var(--wa-border);
+    color: var(--wa-text-sub);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+    text-align: center;
+  }
+  .mode-btn.active {
+    background: rgba(0,168,132,0.15);
+    border-color: var(--wa-green);
+    color: var(--wa-green-light);
+  }
+  .mode-btn:hover:not(.active) { border-color: var(--wa-text-muted); color: var(--wa-text); }
+
+  /* Role badge on bubbles */
+  .bubble-wrap { display: flex; flex-direction: column; }
+  .bubble-wrap.user { align-items: flex-end; }
+  .bubble-wrap.bot  { align-items: flex-start; }
+  .bubble-label {
+    font-size: 10.5px;
+    color: var(--wa-text-muted);
+    margin-bottom: 2px;
+    padding: 0 4px;
+    font-weight: 500;
+  }
+  .bubble-wrap.user .bubble { align-self: auto; }
+  .bubble-wrap.bot  .bubble { align-self: auto; }
+
+  /* Role toggle */
+  .role-toggle {
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 19px;
+    background: rgba(0,168,132,0.15);
+    border: 1px solid var(--wa-green);
+    color: var(--wa-green-light);
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    flex-shrink: 0;
+    transition: all .15s;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+  }
+  .role-toggle:hover { opacity: 0.8; }
+  .role-toggle.lawan {
+    background: rgba(248,113,113,0.12);
+    border-color: rgba(248,113,113,0.5);
+    color: #f87171;
+  }
+  .role-toggle[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+  /* Placeholder in customer mode */
+  .mode-hint {
+    font-size: 11px;
+    color: var(--wa-text-sub);
+    text-align: center;
+    padding: 4px 22px 8px;
+    display: none;
+  }
+  .mode-hint.visible { display: block; }
+
+  /* Mobile Compatibility */
+@media (max-width: 768px) {
+  main {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: auto;
+  }
+
+  .panel-left {
+    height: 50vh;
+    border-right: none;
+    border-bottom: 2px solid var(--wa-border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .panel-right {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .stats-row {
+    grid-template-columns: 1fr; 
+  }
+
+  .table-area {
+    overflow-x: auto;
+  }
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo-mark">C2</div>
   <div>
-    <div class="logo-text">Chat to Core</div>
-    <div class="logo-sub">Pencatatan Keuangan UMKM via WhatsApp</div>
+    <div class="logo-text">FinVibe</div>
+    <div class="logo-sub">The Invisible Assistant for Your Business Finance</div>
   </div>
-  <span class="header-badge">lausapempruy</span>
+  <span class="header-badge">
+    <div class="footer-status" id="footerStatus">
+        <div class="status-dot"></div>
+        Server aktif
+      </div>
+  </span>
 </header>
 
 <main>
   <!-- LEFT: Chat Simulator -->
   <div class="panel-left">
-    <div class="panel-section-label">Simulator WhatsApp</div>
-
-    <div class="phone-bar">
-      <input id="phoneInput" type="text" value="628123456789" placeholder="Nomor HP" />
+    <div class="panel-section-label" style="display:flex;align-items:center;justify-content:space-between;padding-right:22px">
+      Simulator WhatsApp
+      <button class="btn secondary" style="padding:4px 12px;font-size:11px" onclick="clearConversation()">Percakapan Baru</button>
     </div>
 
-    <div class="quick-chips">
-      <span class="chip" onclick="fillMsg('habis 20rb buat makan siang')">Makan 20rb</span>
-      <span class="chip" onclick="fillMsg('terima bayaran 500rb dari Budi buat kue')">Terima 500rb</span>
-      <span class="chip" onclick="fillMsg('bayar bensin 80 ribu')">Bensin 80rb</span>
-      <span class="chip" onclick="fillMsg('dapat uang 1.5 juta dari jualan online')">Jualan 1.5jt</span>
-      <span class="chip" onclick="fillMsg('beli bahan baku 250000')">Bahan baku 250rb</span>
-      <span class="chip" onclick="fillMsg('terima DP 100rb dari pelanggan kue ulang tahun')">DP 100rb</span>
+    <!-- Mode selector -->
+    <div class="mode-bar">
+      <button class="mode-btn active" id="modeDual" onclick="setMode('dual')">Dua Arah</button>
+      <button class="mode-btn" id="modeBuyer" onclick="setMode('buyer')">Mode Pembeli</button>
+      <button class="mode-btn" id="modeSeller" onclick="setMode('seller')">Mode Penjual</button>
+    </div>
+    <div class="mode-hint" id="modeHint"></div>
+
+    <!-- Header Title WA -->
+    <div class="chats-header">
+      <div class="chats-title">Chats</div>
+      <div class="chats-actions">
+        <!-- Ikon add chat -->
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        <!-- Ikon titik tiga -->
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+          <path d="M12 7a2 2 0 1 0-.001-4.001A2 2 0 0 0 12 7zm0 2a2 2 0 1 0-.001 3.999A2 2 0 0 0 12 9zm0 6a2 2 0 1 0-.001 3.999A2 2 0 0 0 12 15z"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar-container">
+      <div class="search-bar-inner">
+        <!-- Ikon kaca pembesar versi outline -->
+        <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input id="phoneInput" type="text" value="628123456789" placeholder="Search or start a new chat" />
+      </div>
+    </div>
+
+    <!-- Filter Chips WA -->
+    <div class="wa-filters">
+      <span class="wa-chip active">All</span>
+      <span class="wa-chip">Unread 25</span>
+      <span class="wa-chip">Favourites</span>
+      <span class="wa-chip icon">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 10l5 5 5-5z"></path></svg>
+      </span>
+    </div>
+
+    <!-- Contact List WA -->
+    <div class="wa-contact-list">
+      
+      <!-- Budi (Active) -->
+      <div class="wa-contact-item active" onclick="switchContact('628123456789', 'buyer', this)">
+        <div class="wa-avatar bg-buyer">B</div>
+        <div class="wa-contact-content">
+          <div class="wa-contact-top">
+            <span class="wa-contact-name">+62 812-3456-789 (Budi)</span>
+            <span class="wa-contact-time">Tuesday</span>
+          </div>
+          <div class="wa-contact-bottom">
+            <span class="wa-contact-preview">
+              <svg viewBox="0 0 16 16" width="16" height="16" fill="#53bdeb"><path d="M11.53 2.3a.75.75 0 0 1 1.06 1.06l-6.8 6.8a.75.75 0 0 1-1.06 0l-2.4-2.4a.75.75 0 0 1 1.06-1.06l1.87 1.87 6.27-6.27zM14.53 2.3a.75.75 0 0 1 1.06 1.06l-6.8 6.8a.75.75 0 0 1-1.06 0l-.8-.8.7-.7.63.63 6.27-6.27z"></path></svg>
+              <span>p</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Supplier Tepung -->
+      <div class="wa-contact-item" onclick="switchContact('628987654321', 'seller', this)">
+        <div class="wa-avatar bg-seller">S</div>
+        <div class="wa-contact-content">
+          <div class="wa-contact-top">
+            <span class="wa-contact-name">Supplier Tepung</span>
+            <span class="wa-contact-time">21:20</span>
+          </div>
+          <div class="wa-contact-bottom">
+            <span class="wa-contact-preview">
+              <svg viewBox="0 0 16 16" width="16" height="16" fill="#8696a0"><path d="M11.53 2.3a.75.75 0 0 1 1.06 1.06l-6.8 6.8a.75.75 0 0 1-1.06 0l-2.4-2.4a.75.75 0 0 1 1.06-1.06l1.87 1.87 6.27-6.27zM14.53 2.3a.75.75 0 0 1 1.06 1.06l-6.8 6.8a.75.75 0 0 1-1.06 0l-.8-.8.7-.7.63.63 6.27-6.27z"></path></svg>
+              <span>oke, nanti aku transfer ya</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chips: dual mode -->
+    <div class="quick-chips" id="chipsDual">
+      <span class="chip" onclick="setRoleAndMsg('lawan','halo kak, mau pesan kue bisa?')">Pembeli tanya</span>
+      <span class="chip" onclick="setRoleAndMsg('saya','bisa, harganya 200rb')">Saya jawab</span>
+      <span class="chip" onclick="setRoleAndMsg('lawan','ok, udah transfer 200rb ya')">Pembeli bayar</span>
+      <span class="chip" onclick="setRoleAndMsg('saya','mau pesan tepung 5kg, berapa?')">Order supplier</span>
+      <span class="chip" onclick="setRoleAndMsg('lawan','250rb kak')">Supplier beri harga</span>
+      <span class="chip" onclick="setRoleAndMsg('saya','oke, udah aku transfer 250rb')">Saya bayar supplier</span>
+    </div>
+    <!-- Chips: buyer mode -->
+    <div class="quick-chips" id="chipsBuyer" style="display:none">
+      <span class="chip" onclick="fillMsg('halo kak, mau pesan kue ulang tahun bisa?')">Tanya produk</span>
+      <span class="chip" onclick="fillMsg('boleh minta detailnya kak?')">Minta detail</span>
+      <span class="chip" onclick="fillMsg('ok deal, berapa nomor rekeningnya?')">Deal, minta rek</span>
+      <span class="chip" onclick="fillMsg('udah aku transfer ya kak')">Konfirmasi transfer</span>
+      <span class="chip" onclick="fillMsg('bisa kurang harganya?')">Tawar harga</span>
+      <span class="chip" onclick="fillMsg('kapan bisa ready?')">Tanya waktu</span>
+    </div>
+    <!-- Chips: seller mode -->
+    <div class="quick-chips" id="chipsSeller" style="display:none">
+      <span class="chip" onclick="fillMsg('mau pesan tepung 5kg, berapa harganya?')">Order supplier</span>
+      <span class="chip" onclick="fillMsg('oke, nanti aku transfer ya')">Setuju harga</span>
+      <span class="chip" onclick="fillMsg('udah aku transfer 250rb ya')">Konfirmasi bayar</span>
+      <span class="chip" onclick="fillMsg('ada stok bahan baku?')">Cek stok</span>
+      <span class="chip" onclick="fillMsg('transferan dari pembeli masuk 500rb')">Catat pemasukan</span>
     </div>
 
     <div class="chat-window" id="chatWindow"></div>
 
-    <div class="chat-input">
-      <button class="btn-icon" id="micBtn" onclick="toggleRecording()" title="Rekam suara">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-          <line x1="12" y1="19" x2="12" y2="23"/>
-          <line x1="8" y1="23" x2="16" y2="23"/>
+    <input type="file" id="audioFileInput" accept="audio/*" hidden>
+    <input type="file" id="imageFileInput" accept="image/*" hidden>
+
+    <!-- FOOTER CHAT  -->
+    <div class="wa-chat-footer">
+      <div class="wa-input-pill">
+        <button class="role-pill-btn" id="roleToggle" onclick="toggleRole()">
+          <span id="roleLabel">Saya</span>
+        </button>
+
+        <!-- Area Ketik Pesan -->
+        <textarea id="msgInput" rows="1" placeholder="Message" oninput="toggleMicSend()"></textarea>
+
+        <button class="wa-icon-pill" onclick="document.getElementById('imageFileInput').click()" title="Kirim gambar">
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <path fill="currentColor" d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"></path>
+          </svg>
+        </button>
+
+        <button class="wa-icon-pill" id="micBtn" onclick="toggleRecording()" title="Rekam suara">
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zM17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="wa-action-circle" id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" width="22" height="22" style="margin-left: 3px;">
+          <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
         </svg>
-      </button>
-      <input type="file" id="audioFileInput" accept="audio/*" style="display:none" />
-      <input type="file" id="imageFileInput" accept="image/*" style="display:none" />
-      <button class="btn-icon" onclick="document.getElementById('audioFileInput').click()" title="Upload file audio">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
-        </svg>
-      </button>
-      <button class="btn-icon" onclick="document.getElementById('imageFileInput').click()" title="Upload bukti transfer">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21 15 16 10 5 21"/>
-        </svg>
-      </button>
-      <textarea
-        id="msgInput"
-        rows="1"
-        placeholder="Ketik pesan transaksi..."
-      ></textarea>
-      <button class="btn" id="sendBtn" onclick="sendMessage()" title="Kirim">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-      </button>
+      </div>
     </div>
   </div>
 
@@ -590,7 +1044,20 @@
   <div class="panel-right">
     <div class="right-header">
       <h2>Riwayat Transaksi</h2>
-      <button class="btn secondary" style="margin-left:auto" onclick="loadTransactions()">Refresh</button>
+      <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
+        <button class="btn-refresh" id="refreshBtn" onclick="handleRefresh()" title="Muat ulang data" style="margin-left:auto">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.26l5.57 5.57"/>
+          </svg>
+        </button>
+        <button class="btn text" onclick="downloadReport()" id="downloadBtn" style="display:flex; align-items:center; gap:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg> Download PDF
+        </button>
+      </div>
     </div>
 
     <div class="stats-row">
@@ -625,18 +1092,17 @@
       </table>
     </div>
 
-    <div class="footer-bar">
-      <button class="btn text" onclick="downloadReport()">Download Laporan PDF</button>
-      <div class="footer-status" id="footerStatus">
-        <div class="status-dot"></div>
-        Server aktif
-      </div>
-    </div>
   </div>
 </main>
 
 <script>
 const API = '';
+
+// Conversation state
+let currentRole = 'saya';
+let conversation = [];
+let recordedTxns = [];
+let simMode = 'dual'; // 'dual' | 'buyer' | 'seller'
 
 function phone() { return document.getElementById('phoneInput').value.trim() || '628000000000'; }
 
@@ -644,6 +1110,73 @@ function fillMsg(text) {
   const ta = document.getElementById('msgInput');
   ta.value = text;
   ta.focus();
+}
+
+function setRoleAndMsg(role, text) {
+  if (simMode !== 'dual') return;
+  if (currentRole !== role) toggleRole();
+  fillMsg(text);
+}
+
+function setMode(mode) {
+  simMode = mode;
+  clearConversation();
+
+  // Mode buttons
+  document.getElementById('modeDual').classList.toggle('active', mode === 'dual');
+  document.getElementById('modeBuyer').classList.toggle('active', mode === 'buyer');
+  document.getElementById('modeSeller').classList.toggle('active', mode === 'seller');
+
+  // Chips
+  document.getElementById('chipsDual').style.display   = mode === 'dual'   ? '' : 'none';
+  document.getElementById('chipsBuyer').style.display  = mode === 'buyer'  ? '' : 'none';
+  document.getElementById('chipsSeller').style.display = mode === 'seller' ? '' : 'none';
+
+  const hint = document.getElementById('modeHint');
+  const toggle = document.getElementById('roleToggle');
+  const ta = document.getElementById('msgInput');
+
+  if (mode === 'buyer') {
+    // Lock to lawan, AI plays seller
+    currentRole = 'lawan';
+    toggle.disabled = true;
+    toggle.classList.add('lawan');
+    document.getElementById('roleLabel').textContent = 'Pembeli';
+    hint.textContent = 'Kamu berperan sebagai pembeli. AI otomatis membalas sebagai penjual.';
+    hint.classList.add('visible');
+    ta.placeholder = 'Ketik pesan sebagai pembeli...';
+  } else if (mode === 'seller') {
+    // Lock to saya, user simulates ordering from supplier (AI plays supplier)
+    currentRole = 'saya';
+    toggle.disabled = true;
+    toggle.classList.remove('lawan');
+    document.getElementById('roleLabel').textContent = 'Penjual';
+    hint.textContent = 'Kamu berperan sebagai penjual. AI otomatis membalas sebagai supplier/pembeli.';
+    hint.classList.add('visible');
+    ta.placeholder = 'Ketik pesan sebagai penjual...';
+  } else {
+    // Dual: free toggle
+    currentRole = 'saya';
+    toggle.disabled = false;
+    toggle.classList.remove('lawan');
+    document.getElementById('roleLabel').textContent = 'Saya';
+    hint.classList.remove('visible');
+    ta.placeholder = 'Ketik pesan transaksi...';
+  }
+}
+
+function toggleRole() {
+  if (simMode !== 'dual') return;
+  currentRole = currentRole === 'saya' ? 'lawan' : 'saya';
+  const btn = document.getElementById('roleToggle');
+  document.getElementById('roleLabel').textContent = currentRole === 'saya' ? 'Saya' : 'Lawan';
+  btn.classList.toggle('lawan', currentRole === 'lawan');
+}
+
+function clearConversation() {
+  conversation = [];
+  recordedTxns = [];
+  document.getElementById('chatWindow').innerHTML = '';
 }
 
 function fmtRp(n) {
@@ -659,8 +1192,13 @@ function fmtDate(s) {
   });
 }
 
-function addImageBubble(src, role) {
+function addImageBubble(src, role, labelOverride) {
   const w = document.getElementById('chatWindow');
+  const wrap = document.createElement('div');
+  wrap.className = `bubble-wrap ${role}`;
+  const lbl = document.createElement('div');
+  lbl.className = 'bubble-label';
+  lbl.textContent = labelOverride || (role === 'user' ? 'Saya' : 'Lawan');
   const div = document.createElement('div');
   div.className = `bubble ${role}`;
   div.style.padding = '4px';
@@ -668,16 +1206,33 @@ function addImageBubble(src, role) {
   img.src = src;
   img.style.cssText = 'max-width:200px;max-height:200px;border-radius:8px;display:block';
   div.appendChild(img);
-  w.appendChild(div);
+  wrap.appendChild(lbl);
+  wrap.appendChild(div);
+  w.appendChild(wrap);
   w.scrollTop = w.scrollHeight;
 }
 
-function addBubble(text, role) {
+function addBubble(text, role, labelOverride) {
   const w = document.getElementById('chatWindow');
+  if (role === 'system' || role === 'error') {
+    const div = document.createElement('div');
+    div.className = `bubble ${role}`;
+    div.textContent = text;
+    w.appendChild(div);
+    w.scrollTop = w.scrollHeight;
+    return div;
+  }
+  const wrap = document.createElement('div');
+  wrap.className = `bubble-wrap ${role}`;
+  const lbl = document.createElement('div');
+  lbl.className = 'bubble-label';
+  lbl.textContent = labelOverride || (role === 'user' ? 'Saya (Penjual)' : 'Lawan');
   const div = document.createElement('div');
   div.className = `bubble ${role}`;
   div.textContent = text;
-  w.appendChild(div);
+  wrap.appendChild(lbl);
+  wrap.appendChild(div);
+  w.appendChild(wrap);
   w.scrollTop = w.scrollHeight;
   return div;
 }
@@ -691,14 +1246,25 @@ async function sendMessage() {
   btn.disabled = true;
   ta.value = '';
 
-  addBubble(text, 'user');
-  const loadingBubble = addBubble('Memproses...', 'system');
+  // Label shown on bubble
+  const senderLabel = currentRole === 'saya'
+    ? (simMode === 'seller' ? 'Saya (Penjual)' : 'Saya')
+    : (simMode === 'buyer'  ? 'Saya (Pembeli)' : 'Lawan');
+
+  conversation.push({ role: currentRole, content: text });
+  addBubble(text, currentRole === 'saya' ? 'user' : 'bot', senderLabel);
+
+  const loadingBubble = addBubble('Menganalisis percakapan...', 'system');
 
   try {
-    const res = await fetch(`${API}/send`, {
+    const res = await fetch(`${API}/conversation`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone_number: phone(), message: text })
+      body: JSON.stringify({
+        phone_number: phone(),
+        history: conversation,
+        recorded_txns: recordedTxns,
+      }),
     });
 
     const data = await res.json();
@@ -707,8 +1273,28 @@ async function sendMessage() {
     if (!res.ok) {
       addBubble('Error: ' + (data.detail || 'Server error'), 'error');
     } else {
-      addBubble(data.reply, 'bot');
-      loadTransactions();
+      if (data.transaction) {
+        recordedTxns.push({ amount: data.transaction.amount, description: data.transaction.description });
+        const label = data.transaction.intent === 'income' ? 'Pemasukan' : 'Pengeluaran';
+        addBubble(`✓ Tercatat: ${label} Rp ${data.transaction.amount.toLocaleString('id-ID')}`, 'system');
+        loadTransactions();
+      }
+      // Auto-reply logic per mode:
+      // buyer mode: user=lawan, AI always replies as penjual
+      // seller mode: user=saya, AI replies as supplier/lawan
+      // dual: AI replies only when lawan sent
+      const shouldReply = (simMode === 'buyer' && currentRole === 'lawan') ||
+                          (simMode === 'seller' && currentRole === 'saya') ||
+                          (simMode === 'dual' && currentRole === 'lawan');
+      const aiReply = data.reply && data.reply.trim()
+        ? data.reply
+        : (shouldReply ? null : null);  // no default fallback
+      if (shouldReply && aiReply) {
+        const aiRole = simMode === 'seller' ? 'lawan' : 'saya';
+        const aiLabel = simMode === 'seller' ? 'Supplier / Lawan' : 'Penjual (AI)';
+        conversation.push({ role: aiRole, content: aiReply });
+        addBubble(aiReply, aiRole === 'saya' ? 'user' : 'bot', aiLabel);
+      }
     }
   } catch (e) {
     loadingBubble.remove();
@@ -717,6 +1303,19 @@ async function sendMessage() {
     btn.disabled = false;
     ta.focus();
   }
+}
+
+function switchContact(phoneNum, mode, element) {
+  document.getElementById('phoneInput').value = phoneNum;
+  
+  const items = document.querySelectorAll('.wa-contact-item');
+  
+  items.forEach(item => item.classList.remove('active'));
+  
+  if (element) element.classList.add('active');
+
+  setMode(mode);
+  loadTransactions();
 }
 
 async function loadTransactions() {
@@ -758,6 +1357,20 @@ function renderTable(rows) {
   }).join('');
 
   updateStats(income, expense);
+}
+
+async function handleRefresh() {
+  const btn = document.getElementById('refreshBtn');
+  
+  btn.disabled = true;
+  btn.classList.add('spin-anim');
+
+  await loadTransactions();
+
+  setTimeout(() => {
+    btn.classList.remove('spin-anim');
+    btn.disabled = false;
+  }, 400);
 }
 
 function updateStats(income, expense) {
@@ -813,7 +1426,9 @@ document.getElementById('imageFileInput').addEventListener('change', async funct
   this.value = '';
 
   const objectUrl = URL.createObjectURL(file);
-  addImageBubble(objectUrl, 'user');
+  const imgBubbleRole = currentRole === 'saya' ? 'user' : 'bot';
+  const imgLabel = currentRole === 'saya' ? 'Saya' : (simMode === 'buyer' ? 'Saya (Pembeli)' : 'Lawan');
+  addImageBubble(objectUrl, imgBubbleRole, imgLabel);
   const loadingBubble = addBubble('Menganalisis bukti pembayaran...', 'system');
   document.getElementById('sendBtn').disabled = true;
 
@@ -836,7 +1451,18 @@ document.getElementById('imageFileInput').addEventListener('change', async funct
     if (!resp.ok) {
       addBubble('Error: ' + (data.detail || 'Server error'), 'error');
     } else {
-      addBubble(data.reply, 'bot');
+      // Add image event to conversation history
+      const imgDesc = data.receipt && data.receipt.is_receipt
+        ? `[mengirim bukti transfer${data.receipt.amount ? ' Rp ' + data.receipt.amount.toLocaleString('id-ID') : ''}]`
+        : '[mengirim gambar]';
+      conversation.push({ role: currentRole, content: imgDesc });
+
+      // Seller reply side: opposite of image sender
+      const replyRole = currentRole === 'saya' ? 'bot' : 'user';
+      const replyLabel = currentRole === 'saya'
+        ? 'Lawan'
+        : (simMode === 'buyer' ? 'Penjual (AI)' : 'Saya');
+      addBubble(data.reply, replyRole, replyLabel);
       loadTransactions();
     }
   } catch(e) {
@@ -847,6 +1473,16 @@ document.getElementById('imageFileInput').addEventListener('change', async funct
     URL.revokeObjectURL(objectUrl);
   }
 });
+
+function toggleRole() {
+  if (simMode !== 'dual') return;
+  currentRole = currentRole === 'saya' ? 'lawan' : 'saya';
+  const btn = document.getElementById('roleToggle');
+  const label = document.getElementById('roleLabel');
+  
+  label.textContent = currentRole === 'saya' ? 'Saya' : 'Lawan';
+  btn.classList.toggle('lawan', currentRole === 'lawan');
+}
 
 // Audio recording
 let mediaRecorder = null;
@@ -918,8 +1554,25 @@ async function sendAudioBlob(blob, mimeType) {
     if (!res.ok) {
       addBubble('Error: ' + (data.detail || 'Server error'), 'error');
     } else {
-      if (data.transcript) addBubble(data.transcript, 'user');
-      addBubble(data.reply, 'bot');
+      const senderBubble = currentRole === 'saya' ? 'user' : 'bot';
+      const senderLabel = currentRole === 'saya'
+        ? 'Saya (suara)'
+        : (simMode === 'buyer' ? 'Saya — Pembeli (suara)' : 'Lawan (suara)');
+      if (data.transcript) {
+        conversation.push({ role: currentRole, content: data.transcript });
+        addBubble(data.transcript, senderBubble, senderLabel);
+      }
+
+      // AI reply side: opposite of sender
+      const replyRole = currentRole === 'saya' ? 'bot' : 'user';
+      const replyLabel = currentRole === 'saya'
+        ? 'Lawan'
+        : (simMode === 'buyer' ? 'Penjual (AI)' : 'Saya');
+
+      if (data.reply) {
+        conversation.push({ role: replyRole === 'user' ? 'saya' : 'lawan', content: data.reply });
+        addBubble(data.reply, replyRole, replyLabel);
+      }
       loadTransactions();
     }
   } catch(e) {
@@ -928,6 +1581,7 @@ async function sendAudioBlob(blob, mimeType) {
   } finally {
     document.getElementById('sendBtn').disabled = false;
   }
+  
 }
 
 loadTransactions();

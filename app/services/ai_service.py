@@ -32,9 +32,11 @@ Output: JSON valid saja, tanpa teks lain.
 }
 
 Aturan amount (Rupiah, integer):
-- "20rb" / "20 ribu" / "20k" -> 20000
-- "1.5jt" / "1,5 juta" -> 1500000
-- angka polos seperti "2000" -> 2000
+- "rb" / "ribu" / "k" = dikali 1.000 → "20rb"=20000, "100rb"=100000, "500rb"=500000
+- "jt" / "juta" = dikali 1.000.000 → "1.5jt"=1500000, "2jt"=2000000
+- "ratus" = dikali 100 → "5 ratus"=500
+- angka polos = nilai asli → "2000"=2000
+- JANGAN mengalikan rb lagi — rb sudah berarti ribu (1.000), BUKAN ratus ribu
 
 EXPENSE — hanya jika pesan mengandung sinyal pengeluaran eksplisit:
 beli, bayar, bayarin, habis, keluar, keluarin, belanja, jajan, isi, top up,
@@ -102,6 +104,125 @@ def transcribe_audio_bytes(audio_bytes: bytes, mime_type: str = "audio/webm") ->
         language="id",
     )
     return transcription.text
+
+
+CONVERSATION_PROMPT = """Kamu asisten pencatat transaksi WhatsApp Business UMKM Indonesia.
+Percakapan antara PENJUAL (role="saya") dan pihak lain (role="lawan": pembeli atau supplier).
+
+Output JSON valid saja:
+{
+  "action": "record | skip",
+  "intent": "income | expense | null",
+  "amount": number,
+  "category": string,
+  "description": string,
+  "reply": string
+}
+
+=== ATURAN AMOUNT — PALING KRITIS ===
+
+amount HANYA boleh diisi jika nominal EKSPLISIT disebutkan dalam teks percakapan.
+- "100rb" = 100000, "250rb" = 250000, "1.5jt" = 1500000
+- Jika TIDAK ADA angka/nominal di percakapan → amount=0, action="skip" WAJIB
+- JANGAN mengarang/menebak nominal yang tidak disebutkan. Ini pelanggaran berat.
+
+=== ATURAN ACTION ===
+
+action="record" HANYA jika SEMUA terpenuhi:
+1. Pesan terakhir = konfirmasi pembayaran selesai ("udah transfer", "sudah bayar", "lunas", "cair")
+2. Nominal EKSPLISIT ada di percakapan (pesan ini atau sebelumnya) → amount > 0
+3. Belum ada di list "transaksi tercatat"
+
+action="skip" jika salah satu:
+- Nominal tidak pernah disebutkan di seluruh percakapan
+- Negosiasi / tanya harga / tanya stok / sapaan / tanya detail
+- Sudah tercatat sebelumnya
+
+=== ATURAN INTENT ===
+
+Siapa yang konfirmasi bayar menentukan arah uang:
+- role="lawan" bilang "udah transfer/bayar" → uang MASUK → intent="income" (sales)
+- role="saya" bilang "udah transfer/bayar" → uang KELUAR → intent="expense" (supplies/dll)
+
+=== ATURAN REPLY ===
+
+Kamu berperan sebagai Penjual UMKM kue rumahan. Profil toko:
+
+PRODUK & HARGA:
+- Kue ulang tahun: 16cm=150rb, 20cm=200rb, 24cm=250rb (custom rasa & dekorasi)
+- Brownies: loyang kecil=50rb, loyang besar=85rb
+- Kue kering: 75rb/toples (nastar, putri salju, kastengel)
+- Tart buah: 18cm=175rb, 22cm=225rb
+
+INFO TOKO:
+- Waktu pesan: min. H-2 (kue custom min. H-3)
+- Pembayaran: transfer BCA 1234567890 a/n Siti Nurhaliza
+- Pengiriman: bisa (Gojek/Grab) atau ambil sendiri
+- Area layanan: Jabodetabek
+
+Balas dengan 1-2 kalimat natural, ramah, Bahasa Indonesia informal.
+WAJIB:
+- Jika ditanya "ada apa/produk apa" → sebutkan menu singkat
+- Jika ditanya harga → berikan harga spesifik dari daftar di atas
+- Jika ditanya detail → jelaskan singkat
+- Jika konfirmasi transfer → konfirmasi tercatat
+- JANGAN pernah bilang "sudah kami berikan" jika info belum disebutkan
+- JANGAN loop pertanyaan yang sama → jika sudah tanya 1x, langsung tawarkan opsi
+
+Jika tidak perlu balas → return "" """
+
+
+def analyze_conversation(history: list[dict], recorded: list[dict]) -> dict:
+    history_text = "\n".join(f"[{m['role']}]: {m['content']}" for m in history)
+    recorded_text = (
+        "\n".join(f"- {r.get('description', '-')} (Rp {r.get('amount', 0)})" for r in recorded)
+        if recorded else "(belum ada)"
+    )
+    user_content = (
+        f"Percakapan:\n{history_text}\n\n"
+        f"Transaksi sudah tercatat di percakapan ini:\n{recorded_text}\n\n"
+        "Analisis pesan TERAKHIR. Output JSON sesuai schema."
+    )
+    resp = _get_client().chat.completions.create(
+        model=TEXT_MODEL,
+        response_format={"type": "json_object"},
+        messages=[
+            {"role": "system", "content": CONVERSATION_PROMPT},
+            {"role": "user", "content": user_content},
+        ],
+        temperature=0,
+    )
+    data = json.loads(resp.choices[0].message.content)
+
+    # Keyword gate: last message MUST contain explicit payment confirmation
+    PAYMENT_KEYWORDS = [
+        "transfer", "bayar", "lunas", "cair", "masuk", "kirim uang",
+        "sudah dibayar", "udah dibayar", "udah bayar", "udah tf",
+        "trf", "tf sudah", "sudah tf", "dana masuk", "pembayaran",
+    ]
+    last_msg = history[-1] if history else {}
+    last_text = last_msg.get("content", "").lower()
+    last_role = last_msg.get("role", "lawan")
+    has_payment_keyword = any(kw in last_text for kw in PAYMENT_KEYWORDS)
+
+    action = str(data.get("action", "skip"))
+    # Override: force skip if last message has no payment keyword
+    if action == "record" and not has_payment_keyword:
+        action = "skip"
+
+    if action == "record":
+        intent = "expense" if last_role == "saya" else "income"
+    else:
+        intent = data.get("intent")
+
+    return {
+        "action": action,
+        "intent": intent,
+        "amount": int(data.get("amount", 0) or 0),
+        "category": str(data.get("category", "")),
+        "description": str(data.get("description", "")),
+        "reply": str(data.get("reply", "")),
+    }
 
 
 VISION_PROMPT = """Kamu OCR khusus bukti pembayaran m-banking Indonesia (BCA, Mandiri, BRI, BNI,
