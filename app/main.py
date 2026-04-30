@@ -12,7 +12,7 @@ from pydantic import BaseModel
 load_dotenv()
 
 from app.db import get_transactions, init_db, insert_transaction
-from app.services.ai_service import analyze_message, process_image_dummy, transcribe_audio, transcribe_audio_bytes
+from app.services.ai_service import analyze_message, analyze_payment_image, transcribe_audio, transcribe_audio_bytes
 from app.services.pdf_service import generate_pdf_report
 
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "c2c_verify")
@@ -84,8 +84,7 @@ async def receive_webhook(request: Request):
         reply = f"Transkripsi: \"{transcript}\"\n\n" + _build_reply(result)
 
     elif msg_type == "image":
-        img_result = process_image_dummy()
-        reply = f"{img_result['message']} — bukti pembayaran diterima."
+        reply = "Bukti pembayaran diterima. Gunakan dashboard untuk upload gambar dan ekstrak data otomatis."
 
     else:
         reply = "Maaf, tipe pesan ini belum didukung. Kirim teks, voice note, atau foto bukti transfer."
@@ -130,6 +129,38 @@ async def send_audio(body: AudioRequest):
         )
     reply = _build_reply(result)
     return JSONResponse({"reply": reply, "transcript": transcript})
+
+
+class ImageRequest(BaseModel):
+    phone_number: str
+    image_b64: str
+    mime_type: str = "image/jpeg"
+
+
+@app.post("/send-image")
+async def send_image(body: ImageRequest):
+    image_bytes = base64.b64decode(body.image_b64)
+    receipt = analyze_payment_image(image_bytes, body.mime_type)
+
+    if not receipt["is_receipt"]:
+        return JSONResponse({
+            "reply": "Gambar bukan bukti pembayaran. Kirim foto struk transfer m-banking.",
+            "receipt": receipt,
+        })
+
+    if receipt["status"] == "success" and receipt["amount"] > 0:
+        desc_parts = []
+        if receipt["sender_name"]: desc_parts.append(f"dari {receipt['sender_name']}")
+        if receipt["bank_or_app"]: desc_parts.append(f"via {receipt['bank_or_app']}")
+        if receipt["ref_no"]:      desc_parts.append(f"ref {receipt['ref_no']}")
+        description = "Transfer masuk " + " ".join(desc_parts) if desc_parts else "Transfer masuk"
+        insert_transaction(body.phone_number, "income", receipt["amount"], "sales", description)
+        amount_str = "Rp " + format(receipt["amount"], ",d").replace(",", ".")
+        reply = f"Bukti pembayaran terverifikasi: {amount_str}\n{description}"
+    else:
+        reply = f"Bukti pembayaran terdeteksi tapi status: {receipt['status']}. Tidak dicatat."
+
+    return JSONResponse({"reply": reply, "receipt": receipt})
 
 
 @app.get("/transactions/{phone_number}")

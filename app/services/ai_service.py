@@ -1,14 +1,16 @@
+import base64
 import json
 import os
 
 import httpx
 from groq import Groq
 
-from app.schemas import ImageResult, TransactionResult
+from app.schemas import TransactionResult
 
 _client: Groq | None = None
 TEXT_MODEL = "llama-3.1-8b-instant"
 AUDIO_MODEL = "whisper-large-v3-turbo"
+VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 
 
 def _get_client() -> Groq:
@@ -102,5 +104,54 @@ def transcribe_audio_bytes(audio_bytes: bytes, mime_type: str = "audio/webm") ->
     return transcription.text
 
 
-def process_image_dummy() -> ImageResult:
-    return ImageResult(status="valid", message="Gambar valid")
+VISION_PROMPT = """Kamu OCR khusus bukti pembayaran m-banking Indonesia (BCA, Mandiri, BRI, BNI,
+CIMB, Permata, GoPay, OVO, DANA, ShopeePay, LinkAja, QRIS, dll).
+
+Output: JSON valid saja, tanpa teks lain.
+
+{
+  "is_receipt": boolean,
+  "status": "success | pending | failed | unknown",
+  "amount": number,
+  "sender_name": string,
+  "recipient_name": string,
+  "bank_or_app": string,
+  "timestamp": string,
+  "ref_no": string
+}
+
+Aturan:
+- is_receipt=false jika gambar bukan bukti transfer/pembayaran (foto orang, makanan, dll).
+  Set semua field lain ke nilai default (amount=0, string kosong).
+- amount: integer Rupiah, hilangkan separator titik/koma, abaikan "Rp"/"IDR".
+- status: "success" jika ada teks Berhasil/Sukses/Successful/Transaksi Berhasil.
+  "pending" jika Diproses/Menunggu. "failed" jika Gagal/Ditolak. Else "unknown".
+- timestamp: ISO 8601 jika bisa diparse, else string apa adanya dari struk.
+- Jika field tidak terbaca jelas: kosongkan (string="" atau 0), JANGAN menebak."""
+
+
+def analyze_payment_image(image_bytes: bytes, mime_type: str = "image/jpeg") -> dict:
+    b64 = base64.b64encode(image_bytes).decode()
+    resp = _get_client().chat.completions.create(
+        model=VISION_MODEL,
+        response_format={"type": "json_object"},
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": VISION_PROMPT},
+                {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{b64}"}},
+            ],
+        }],
+        temperature=0,
+    )
+    data = json.loads(resp.choices[0].message.content)
+    return {
+        "is_receipt": bool(data.get("is_receipt", False)),
+        "status": str(data.get("status", "unknown")),
+        "amount": int(data.get("amount", 0) or 0),
+        "sender_name": str(data.get("sender_name", "")),
+        "recipient_name": str(data.get("recipient_name", "")),
+        "bank_or_app": str(data.get("bank_or_app", "")),
+        "timestamp": str(data.get("timestamp", "")),
+        "ref_no": str(data.get("ref_no", "")),
+    }

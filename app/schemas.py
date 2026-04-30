@@ -8,6 +8,12 @@ class TransactionResult(TypedDict):
     description: str
 
 
-class ImageResult(TypedDict):
+class PaymentReceiptResult(TypedDict):
+    is_receipt: bool
     status: str
-    message: str
+    amount: int
+    sender_name: str
+    recipient_name: str
+    bank_or_app: str
+    timestamp: str
+    ref_no: str
