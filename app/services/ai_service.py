@@ -20,7 +20,7 @@ def _get_client() -> Groq:
 
 SYSTEM_PROMPT = """Kamu adalah parser transaksi keuangan untuk pesan WhatsApp UMKM Indonesia.
 
-Tugas: ubah pesan pengguna menjadi JSON berikut, tanpa teks lain di luar JSON.
+Output: JSON valid saja, tanpa teks lain.
 
 {
   "intent": "expense | income | unknown",
@@ -29,13 +29,27 @@ Tugas: ubah pesan pengguna menjadi JSON berikut, tanpa teks lain di luar JSON.
   "description": string
 }
 
-Aturan:
-- amount dalam Rupiah bulat. "20rb" atau "20 ribu" = 20000, "1.5jt" atau "1,5 juta" = 1500000
-- category: food, transport, sales, supplies, utilities, salary, dll
-- expense: uang keluar (beli, bayar, habis, keluar)
-- income: uang masuk (terima, dapat, masuk, jualan, DP)
-- tidak jelas atau bukan transaksi: intent = "unknown", amount = 0
-- description: ringkasan singkat dalam bahasa Indonesia"""
+Aturan amount (Rupiah, integer):
+- "20rb" / "20 ribu" / "20k" -> 20000
+- "1.5jt" / "1,5 juta" -> 1500000
+- angka polos seperti "2000" -> 2000
+
+EXPENSE — hanya jika pesan mengandung sinyal pengeluaran eksplisit:
+beli, bayar, bayarin, habis, keluar, keluarin, belanja, jajan, isi, top up,
+kasih ke, transfer ke, kirim ke, langganan, sewa, cicilan, ongkos, gajiin
+
+INCOME — hanya jika pesan mengandung sinyal pemasukan eksplisit:
+terima, dapat, dapet, masuk, jual, jualan, laku, dibayar, dibayarin,
+dp, omset, pemasukan, transfer dari, kirim dari, dari [nama orang]
+
+UNKNOWN — gunakan ini jika:
+- tidak ada sinyal eksplisit di atas
+- pesan hanya berisi nama barang + nominal tanpa kata kerja (contoh: "tahu 2000", "bensin 50rb", "kopi 10rb")
+- sapaan, pertanyaan, atau bukan transaksi
+- JANGAN menebak intent jika ragu — pilih unknown, set amount = 0
+
+category: food, transport, sales, supplies, utilities, salary, rent, dll
+description: ringkasan singkat bahasa Indonesia berdasarkan isi pesan"""
 
 
 def analyze_message(user_text: str) -> TransactionResult:
@@ -68,6 +82,20 @@ def transcribe_audio(media_url: str) -> str:
 
     transcription = _get_client().audio.transcriptions.create(
         file=("audio.ogg", audio_bytes, "audio/ogg"),
+        model=AUDIO_MODEL,
+        language="id",
+    )
+    return transcription.text
+
+
+def transcribe_audio_bytes(audio_bytes: bytes, mime_type: str = "audio/webm") -> str:
+    clean_mime = mime_type.split(";")[0].strip()
+    ext = clean_mime.split("/")[-1]
+    ext_map = {"webm": "webm", "ogg": "ogg", "oga": "ogg", "mp4": "mp4",
+               "mpeg": "mp3", "mpga": "mp3", "wav": "wav", "m4a": "m4a"}
+    filename = f"audio.{ext_map.get(ext, 'webm')}"
+    transcription = _get_client().audio.transcriptions.create(
+        file=(filename, audio_bytes, clean_mime),
         model=AUDIO_MODEL,
         language="id",
     )

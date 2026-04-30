@@ -1,3 +1,4 @@
+import base64
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -11,7 +12,7 @@ from pydantic import BaseModel
 load_dotenv()
 
 from app.db import get_transactions, init_db, insert_transaction
-from app.services.ai_service import analyze_message, process_image_dummy, transcribe_audio
+from app.services.ai_service import analyze_message, process_image_dummy, transcribe_audio, transcribe_audio_bytes
 from app.services.pdf_service import generate_pdf_report
 
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "c2c_verify")
@@ -109,6 +110,26 @@ def send_message(body: SendRequest):
             result["description"],
         )
     return JSONResponse({"reply": _build_reply(result)})
+
+
+class AudioRequest(BaseModel):
+    phone_number: str
+    audio_b64: str
+    mime_type: str = "audio/webm"
+
+
+@app.post("/send-audio")
+async def send_audio(body: AudioRequest):
+    audio_bytes = base64.b64decode(body.audio_b64)
+    transcript = transcribe_audio_bytes(audio_bytes, body.mime_type)
+    result = analyze_message(transcript)
+    if result["intent"] != "unknown":
+        insert_transaction(
+            body.phone_number, result["intent"], result["amount"],
+            result["category"], result["description"],
+        )
+    reply = _build_reply(result)
+    return JSONResponse({"reply": reply, "transcript": transcript})
 
 
 @app.get("/transactions/{phone_number}")
