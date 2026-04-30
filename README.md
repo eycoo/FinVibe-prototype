@@ -2,7 +2,7 @@
 
 Pencatatan keuangan UMKM otomatis via WhatsApp. Kirim pesan teks, voice note, atau foto bukti transfer — sistem langsung catat dan buat laporan.
 
-**AI engine**: Groq API (llama-3.1-8b-instant + whisper-large-v3-turbo)
+**AI engine**: Groq API (llama-3.1-8b-instant + whisper-large-v3-turbo + llama-4-scout-17b-16e-instruct)
 
 ## Quick Start
 
@@ -38,6 +38,8 @@ Dashboard: http://localhost:8000/dashboard
 | GET | `/webhook` | Verifikasi webhook Meta |
 | POST | `/webhook` | Handler pesan WhatsApp masuk |
 | POST | `/send` | Input teks langsung (dipakai dashboard) |
+| POST | `/send-audio` | Upload audio base64 → Whisper → NER |
+| POST | `/send-image` | Upload gambar base64 → OCR bukti transfer |
 | GET | `/transactions/{phone}` | Riwayat transaksi JSON |
 | GET | `/report/{phone}` | Download laporan PDF |
 
@@ -62,6 +64,15 @@ Kirim pesan langsung:
 curl -X POST http://localhost:8000/send \
   -H "Content-Type: application/json" \
   -d '{"phone_number": "628123456789", "message": "habis 20rb buat makan siang"}'
+```
+
+Upload bukti transfer (gambar):
+```bash
+# Encode gambar ke base64 dulu
+B64=$(base64 -w 0 bukti_transfer.jpg)
+curl -X POST http://localhost:8000/send-image \
+  -H "Content-Type: application/json" \
+  -d "{\"phone_number\": \"628123456789\", \"image_b64\": \"$B64\", \"mime_type\": \"image/jpeg\"}"
 ```
 
 Simulasi payload WhatsApp:
@@ -97,12 +108,14 @@ sqlite3 app.db "SELECT * FROM transactions;"
 ## Alur sistem
 
 ```
-Dashboard UI  ->  POST /send  ->  Groq LLM (NER)  ->  SQLite  ->  Reply
+Dashboard UI  ->  POST /send        ->  Groq LLM (NER)              ->  SQLite  ->  Reply
+              ->  POST /send-audio  ->  Groq Whisper (ASR)  ->  NER  ->  SQLite  ->  Reply
+              ->  POST /send-image  ->  Groq Vision (OCR)            ->  SQLite  ->  Reply
 
 WhatsApp      ->  POST /webhook
-  text        ->  Groq LLM (NER)        ->  SQLite  ->  Reply
-  audio       ->  Groq Whisper (ASR)    ->  NER     ->  SQLite  ->  Reply
-  image       ->  dummy validator       ->  Reply
+  text        ->  Groq LLM (NER)              ->  SQLite  ->  Reply
+  audio       ->  Groq Whisper (ASR)  ->  NER ->  SQLite  ->  Reply
+  image       ->  (dashboard upload recommended)
 
 GET /report/{phone}  ->  SQLite  ->  ReportLab PDF
 ```
